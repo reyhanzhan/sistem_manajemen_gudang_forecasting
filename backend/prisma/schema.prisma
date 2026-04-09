@@ -1,0 +1,388 @@
+// ══════════════════════════════════════════════════════════════
+// AI-Powered Warehouse Management System — Database Schema
+// PostgreSQL via Prisma ORM
+// ══════════════════════════════════════════════════════════════
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── ENUMS ──────────────────────────────────────────────────
+
+enum Role {
+  ADMIN
+  MANAGER
+  STAFF
+}
+
+enum MovementType {
+  STOCK_IN
+  STOCK_OUT
+  TRANSFER
+  ADJUSTMENT
+}
+
+enum MovementStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  COMPLETED
+  CANCELLED
+}
+
+enum NotificationType {
+  LOW_STOCK
+  REORDER_SUGGESTION
+  STOCK_EXPIRY
+  TRANSFER_REQUEST
+  SYSTEM_ALERT
+}
+
+enum NotificationPriority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum ForecastStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+enum ProductStatus {
+  ACTIVE
+  INACTIVE
+  DISCONTINUED
+}
+
+enum WarehouseStatus {
+  ACTIVE
+  INACTIVE
+  MAINTENANCE
+}
+
+// ─── USER & AUTHENTICATION ─────────────────────────────────
+
+model User {
+  id            String   @id @default(uuid())
+  email         String   @unique
+  passwordHash  String   @map("password_hash")
+  firstName     String   @map("first_name")
+  lastName      String   @map("last_name")
+  role          Role     @default(STAFF)
+  isActive      Boolean  @default(true) @map("is_active")
+  lastLoginAt   DateTime? @map("last_login_at")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  warehouseAssignments  UserWarehouse[]
+  createdMovements      InventoryMovement[] @relation("CreatedByUser")
+  approvedMovements     InventoryMovement[] @relation("ApprovedByUser")
+  notifications         Notification[]
+  auditLogs             AuditLog[]
+
+  @@map("users")
+}
+
+// ─── USER ↔ WAREHOUSE ASSIGNMENT (Many-to-Many) ────────────
+
+model UserWarehouse {
+  id          String   @id @default(uuid())
+  userId      String   @map("user_id")
+  warehouseId String   @map("warehouse_id")
+  isPrimary   Boolean  @default(false) @map("is_primary")
+  assignedAt  DateTime @default(now()) @map("assigned_at")
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  warehouse Warehouse @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, warehouseId])
+  @@map("user_warehouses")
+}
+
+// ─── WAREHOUSE ──────────────────────────────────────────────
+
+model Warehouse {
+  id          String          @id @default(uuid())
+  code        String          @unique // e.g., "WH-JKT-01"
+  name        String
+  address     String
+  city        String
+  province    String
+  postalCode  String?         @map("postal_code")
+  phone       String?
+  capacity    Int             @default(0) // max storage units
+  status      WarehouseStatus @default(ACTIVE)
+  latitude    Decimal?        @db.Decimal(10, 8)
+  longitude   Decimal?        @db.Decimal(11, 8)
+  createdAt   DateTime        @default(now()) @map("created_at")
+  updatedAt   DateTime        @updatedAt @map("updated_at")
+
+  // Relations
+  userAssignments    UserWarehouse[]
+  inventoryItems     Inventory[]
+  stockLocations     StockLocation[]
+  outgoingMovements  InventoryMovement[] @relation("SourceWarehouse")
+  incomingMovements  InventoryMovement[] @relation("DestinationWarehouse")
+
+  @@map("warehouses")
+}
+
+// ─── STOCK LOCATION (Rack/Shelf/Bin within warehouse) ──────
+
+model StockLocation {
+  id          String   @id @default(uuid())
+  warehouseId String   @map("warehouse_id")
+  code        String   // e.g., "A-01-03" (Aisle-Rack-Shelf)
+  name        String
+  description String?
+  capacity    Int      @default(0)
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  warehouse      Warehouse       @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
+  inventoryItems Inventory[]
+
+  @@unique([warehouseId, code])
+  @@map("stock_locations")
+}
+
+// ─── PRODUCT CATEGORY ───────────────────────────────────────
+
+model Category {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String?
+  parentId    String?  @map("parent_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  parent   Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children Category[] @relation("CategoryHierarchy")
+  products Product[]
+
+  @@map("categories")
+}
+
+// ─── SUPPLIER ───────────────────────────────────────────────
+
+model Supplier {
+  id            String   @id @default(uuid())
+  code          String   @unique
+  name          String
+  contactPerson String?  @map("contact_person")
+  email         String?
+  phone         String?
+  address       String?
+  city          String?
+  province      String?
+  isActive      Boolean  @default(true) @map("is_active")
+  leadTimeDays  Int      @default(7) @map("lead_time_days") // avg delivery time
+  rating        Decimal? @db.Decimal(3, 2) // 1.00 - 5.00
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  products          ProductSupplier[]
+  inventoryMovements InventoryMovement[]
+
+  @@map("suppliers")
+}
+
+// ─── PRODUCT ────────────────────────────────────────────────
+
+model Product {
+  id              String        @id @default(uuid())
+  sku             String        @unique // Stock Keeping Unit
+  name            String
+  description     String?
+  categoryId      String?       @map("category_id")
+  unit            String        @default("pcs") // pcs, kg, liter, box, etc.
+  weight          Decimal?      @db.Decimal(10, 3)
+  dimensions      String?       // LxWxH in cm
+  minStockLevel   Int           @default(10) @map("min_stock_level")
+  maxStockLevel   Int           @default(1000) @map("max_stock_level")
+  reorderPoint    Int           @default(20) @map("reorder_point")
+  reorderQuantity Int           @default(100) @map("reorder_quantity")
+  unitPrice       Decimal       @default(0) @db.Decimal(15, 2) @map("unit_price")
+  status          ProductStatus @default(ACTIVE)
+  imageUrl        String?       @map("image_url")
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
+
+  category        Category?          @relation(fields: [categoryId], references: [id])
+  suppliers       ProductSupplier[]
+  inventoryItems  Inventory[]
+  movementLines   MovementLine[]
+  forecastResults ForecastResult[]
+
+  @@map("products")
+}
+
+// ─── PRODUCT ↔ SUPPLIER (Many-to-Many with price) ──────────
+
+model ProductSupplier {
+  id            String   @id @default(uuid())
+  productId     String   @map("product_id")
+  supplierId    String   @map("supplier_id")
+  supplierSku   String?  @map("supplier_sku")
+  unitCost      Decimal  @db.Decimal(15, 2) @map("unit_cost")
+  isPrimary     Boolean  @default(false) @map("is_primary")
+  minOrderQty   Int      @default(1) @map("min_order_qty")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  product  Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  supplier Supplier @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, supplierId])
+  @@map("product_suppliers")
+}
+
+// ─── INVENTORY (Stock levels per product per warehouse) ─────
+
+model Inventory {
+  id              String   @id @default(uuid())
+  productId       String   @map("product_id")
+  warehouseId     String   @map("warehouse_id")
+  locationId      String?  @map("location_id")
+  quantity        Int      @default(0)
+  reservedQty     Int      @default(0) @map("reserved_qty")
+  availableQty    Int      @default(0) @map("available_qty") // quantity - reservedQty
+  lastCountedAt   DateTime? @map("last_counted_at")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  product   Product        @relation(fields: [productId], references: [id], onDelete: Cascade)
+  warehouse Warehouse      @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
+  location  StockLocation? @relation(fields: [locationId], references: [id])
+
+  @@unique([productId, warehouseId, locationId])
+  @@index([warehouseId])
+  @@index([productId])
+  @@map("inventory")
+}
+
+// ─── INVENTORY MOVEMENT (Header) ────────────────────────────
+
+model InventoryMovement {
+  id                   String         @id @default(uuid())
+  referenceNumber      String         @unique @map("reference_number") // e.g., "MOV-20240301-001"
+  type                 MovementType
+  status               MovementStatus @default(PENDING)
+  sourceWarehouseId    String?        @map("source_warehouse_id")
+  destinationWarehouseId String?      @map("destination_warehouse_id")
+  supplierId           String?        @map("supplier_id")
+  notes                String?
+  createdById          String         @map("created_by_id")
+  approvedById         String?        @map("approved_by_id")
+  approvedAt           DateTime?      @map("approved_at")
+  completedAt          DateTime?      @map("completed_at")
+  createdAt            DateTime       @default(now()) @map("created_at")
+  updatedAt            DateTime       @updatedAt @map("updated_at")
+
+  sourceWarehouse      Warehouse?   @relation("SourceWarehouse", fields: [sourceWarehouseId], references: [id])
+  destinationWarehouse Warehouse?   @relation("DestinationWarehouse", fields: [destinationWarehouseId], references: [id])
+  supplier             Supplier?    @relation(fields: [supplierId], references: [id])
+  createdBy            User         @relation("CreatedByUser", fields: [createdById], references: [id])
+  approvedBy           User?        @relation("ApprovedByUser", fields: [approvedById], references: [id])
+  lines                MovementLine[]
+
+  @@index([type])
+  @@index([status])
+  @@index([createdAt])
+  @@map("inventory_movements")
+}
+
+// ─── MOVEMENT LINE ITEMS ────────────────────────────────────
+
+model MovementLine {
+  id          String @id @default(uuid())
+  movementId  String @map("movement_id")
+  productId   String @map("product_id")
+  quantity    Int
+  unitCost    Decimal? @db.Decimal(15, 2) @map("unit_cost")
+  batchNumber String?  @map("batch_number")
+  expiryDate  DateTime? @map("expiry_date")
+  notes       String?
+
+  movement InventoryMovement @relation(fields: [movementId], references: [id], onDelete: Cascade)
+  product  Product           @relation(fields: [productId], references: [id])
+
+  @@map("movement_lines")
+}
+
+// ─── NOTIFICATION ───────────────────────────────────────────
+
+model Notification {
+  id          String               @id @default(uuid())
+  userId      String               @map("user_id")
+  type        NotificationType
+  priority    NotificationPriority @default(MEDIUM)
+  title       String
+  message     String
+  metadata    Json?                // flexible payload (productId, warehouseId, etc.)
+  isRead      Boolean              @default(false) @map("is_read")
+  readAt      DateTime?            @map("read_at")
+  createdAt   DateTime             @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead])
+  @@index([type])
+  @@map("notifications")
+}
+
+// ─── AI FORECAST RESULTS ────────────────────────────────────
+
+model ForecastResult {
+  id                String         @id @default(uuid())
+  productId         String         @map("product_id")
+  warehouseId       String?        @map("warehouse_id")
+  forecastDate      DateTime       @map("forecast_date")
+  periodDays        Int            @default(30) @map("period_days")
+  predictedDemand   Decimal        @db.Decimal(15, 2) @map("predicted_demand")
+  confidenceLower   Decimal?       @db.Decimal(15, 2) @map("confidence_lower")
+  confidenceUpper   Decimal?       @db.Decimal(15, 2) @map("confidence_upper")
+  suggestedReorder  Int?           @map("suggested_reorder")
+  modelVersion      String         @map("model_version")
+  modelMetrics      Json?          @map("model_metrics") // MAE, RMSE, etc.
+  status            ForecastStatus @default(PENDING)
+  createdAt         DateTime       @default(now()) @map("created_at")
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId, forecastDate])
+  @@index([status])
+  @@map("forecast_results")
+}
+
+// ─── AUDIT LOG ──────────────────────────────────────────────
+
+model AuditLog {
+  id          String   @id @default(uuid())
+  userId      String?  @map("user_id")
+  action      String   // CREATE, UPDATE, DELETE, LOGIN, etc.
+  entity      String   // Table/entity name
+  entityId    String?  @map("entity_id")
+  oldValues   Json?    @map("old_values")
+  newValues   Json?    @map("new_values")
+  ipAddress   String?  @map("ip_address")
+  userAgent   String?  @map("user_agent")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  user User? @relation(fields: [userId], references: [id])
+
+  @@index([entity, entityId])
+  @@index([userId])
+  @@index([createdAt])
+  @@map("audit_logs")
+}

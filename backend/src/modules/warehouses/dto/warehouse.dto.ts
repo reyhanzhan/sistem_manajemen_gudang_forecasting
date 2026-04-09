@@ -1,0 +1,35 @@
+import { IsString, IsOptional, IsEnum, IsInt, IsNumber } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { WarehouseStatus } from '@prisma/client';
+
+export class CreateWarehouseDto {
+  @ApiProperty({ example: 'WH-JKT-01' }) @IsString() code: string;
+  @ApiProperty({ example: 'Jakarta Main Warehouse' }) @IsString() name: string;
+  @ApiProperty() @IsString() address: string;
+  @ApiProperty() @IsString() city: string;
+  @ApiProperty() @IsString() province: string;
+  @ApiPropertyOptional() @IsOptional() @IsString() postalCode?: string;
+  @ApiPropertyOptional() @IsOptional() @IsString() phone?: string;
+  @ApiPropertyOptional() @IsOptional() @IsInt() capacity?: number;
+  @ApiPropertyOptional() @IsOptional() @IsNumber() latitude?: number;
+  @ApiPropertyOptional() @IsOptional() @IsNumber() longitude?: number;
+}
+
+export class UpdateWarehouseDto {
+  @IsOptional() @IsString() name?: string;
+  @IsOptional() @IsString() address?: string;
+  @IsOptional() @IsString() city?: string;
+  @IsOptional() @IsString() province?: string;
+  @IsOptional() @IsString() postalCode?: string;
+  @IsOptional() @IsString() phone?: string;
+  @IsOptional() @IsInt() capacity?: number;
+  @IsOptional() @IsEnum(WarehouseStatus) status?: WarehouseStatus;
+}
+
+export class WarehouseQueryDto {
+  @IsOptional() @IsString() search?: string;
+  @IsOptional() @IsEnum(WarehouseStatus) status?: WarehouseStatus;
+  @IsOptional() @IsString() city?: string;
+  @IsOptional() page?: number;
+  @IsOptional() limit?: number;
+}
