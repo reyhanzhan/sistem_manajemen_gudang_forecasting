@@ -66,6 +66,7 @@ export const productsApi = {
   getById: (id: string) => api.get(`/products/${id}`),
   create: (data: any) => api.post('/products', data),
   update: (id: string, data: any) => api.patch(`/products/${id}`, data),
+  delete: (id: string) => api.delete(`/products/${id}`),
   getStock: (id: string) => api.get(`/products/${id}/stock`),
 };
 
@@ -75,6 +76,7 @@ export const warehousesApi = {
   getById: (id: string) => api.get(`/warehouses/${id}`),
   create: (data: any) => api.post('/warehouses', data),
   update: (id: string, data: any) => api.patch(`/warehouses/${id}`, data),
+  delete: (id: string) => api.delete(`/warehouses/${id}`),
   getInventory: (id: string) => api.get(`/warehouses/${id}/inventory`),
 };
 
@@ -94,6 +96,17 @@ export const suppliersApi = {
   getById: (id: string) => api.get(`/suppliers/${id}`),
   create: (data: any) => api.post('/suppliers', data),
   update: (id: string, data: any) => api.patch(`/suppliers/${id}`, data),
+  delete: (id: string) => api.delete(`/suppliers/${id}`),
+};
+
+// ─── Users API ──────────────────────────────────────────
+export const usersApi = {
+  getAll: (params?: any) => api.get('/users', { params }),
+  getById: (id: string) => api.get(`/users/${id}`),
+  create: (data: any) => api.post('/users', data),
+  update: (id: string, data: any) => api.patch(`/users/${id}`, data),
+  deactivate: (id: string) => api.patch(`/users/${id}/deactivate`),
+  activate: (id: string) => api.patch(`/users/${id}/activate`),
 };
 
 // ─── Forecast API ───────────────────────────────────────

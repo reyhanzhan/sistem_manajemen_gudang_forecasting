@@ -24,14 +24,14 @@ export default function NotificationsPage() {
 
   const markRead = async (id: string) => {
     try {
-      await notificationsApi.markRead(id);
+      await notificationsApi.markAsRead(id);
       load();
     } catch (err) { console.error(err); }
   };
 
   const markAllRead = async () => {
     try {
-      await notificationsApi.markAllRead();
+      await notificationsApi.markAllAsRead();
       load();
     } catch (err) { console.error(err); }
   };
