@@ -89,16 +89,16 @@ export default function OptimizationPage() {
     <div>
       <Header title="Auto-PO Generator" subtitle="AI-powered inventory optimization with Economic Order Quantity (EOQ)" />
 
-      <div className="p-6 space-y-6">
+      <div className="page-container">
         {/* Controls */}
         <div className="card">
           <div className="flex flex-wrap items-end gap-4">
             <div className="flex-1 min-w-[200px]">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Select Product</label>
+              <label className="input-label">Select Product</label>
               <select
                 value={selectedProduct}
                 onChange={(e) => setSelectedProduct(e.target.value)}
-                className="input w-full"
+                className="input-field w-full"
               >
                 <option value="">-- Pilih Produk --</option>
                 {products.map((p) => (
@@ -165,7 +165,7 @@ export default function OptimizationPage() {
             </div>
 
             {/* Order Decision */}
-            <div className={`card border-2 ${rec.should_order_now ? 'border-red-400 bg-red-50' : 'border-green-400 bg-green-50'}`}>
+            <div className={`card border-2 rounded-2xl ${rec.should_order_now ? 'border-red-300 bg-red-50' : 'border-emerald-300 bg-emerald-50'}`}>
               <div className="flex items-center gap-3">
                 {rec.should_order_now ? (
                   <>
@@ -183,8 +183,8 @@ export default function OptimizationPage() {
                   <>
                     <CheckCircle className="text-green-500" size={24} />
                     <div>
-                      <h3 className="font-bold text-green-700">Stok Aman</h3>
-                      <p className="text-sm text-green-600">
+                      <h3 className="font-bold text-emerald-700">Stok Aman</h3>
+                      <p className="text-sm text-emerald-600">
                         Stok saat ini ({poResult.current_stock}) masih di atas Reorder Point ({rec.reorder_point}).
                         Belum perlu memesan.
                       </p>
@@ -195,12 +195,14 @@ export default function OptimizationPage() {
             </div>
 
             {/* Supplier Options Table */}
-            <div className="card">
-              <h3 className="text-lg font-semibold mb-4">Supplier Options & Cost Analysis</h3>
+            <div className="card !p-0 overflow-hidden">
+              <div className="px-6 py-4 border-b border-gray-100">
+                <h3 className="text-lg font-semibold">Supplier Options & Cost Analysis</h3>
+              </div>
               <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
+                <table className="min-w-full divide-y divide-gray-100">
                   <thead>
-                    <tr>
+                    <tr className="bg-gray-50/80">
                       <th className="table-header">Supplier</th>
                       <th className="table-header">Lead Time</th>
                       <th className="table-header">Unit Cost</th>
@@ -211,12 +213,12 @@ export default function OptimizationPage() {
                       <th className="table-header">Order?</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-200">
+                  <tbody className="divide-y divide-gray-50">
                     {(poResult.supplier_options || []).map((opt: any, i: number) => (
-                      <tr key={i} className={`hover:bg-gray-50 ${i === 0 ? 'bg-blue-50' : ''}`}>
+                      <tr key={i} className={`hover:bg-gray-50/60 transition-colors ${i === 0 ? 'bg-primary-50/40' : ''}`}>
                         <td className="table-cell">
-                          <div className="font-medium">{opt.supplier.name}</div>
-                          {opt.supplier.is_primary && <span className="text-xs text-blue-600">Primary</span>}
+                          <div className="font-semibold text-gray-900">{opt.supplier.name}</div>
+                          {opt.supplier.is_primary && <span className="text-xs text-primary-600 font-medium">Primary</span>}
                         </td>
                         <td className="table-cell">{opt.supplier.lead_time_days} days</td>
                         <td className="table-cell">Rp {opt.unit_cost.toLocaleString('id-ID')}</td>
@@ -244,13 +246,13 @@ export default function OptimizationPage() {
                 <h3 className="text-lg font-semibold mb-4">Cost Breakdown by Supplier</h3>
                 <ResponsiveContainer width="100%" height={300}>
                   <BarChart data={costData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="supplier" tick={{ fontSize: 11 }} />
-                    <YAxis />
-                    <Tooltip formatter={(value: number) => `Rp ${value.toLocaleString('id-ID')}`} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                    <XAxis dataKey="supplier" tick={{ fontSize: 11 }} stroke="#94a3b8" />
+                    <YAxis stroke="#94a3b8" />
+                    <Tooltip contentStyle={{ borderRadius: 12, border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.08)' }} formatter={(value: number) => `Rp ${value.toLocaleString('id-ID')}`} />
                     <Legend />
-                    <Bar dataKey="orderCost" name="Order Cost" fill="#3b82f6" stackId="a" />
-                    <Bar dataKey="holdingCost" name="Holding Cost" fill="#f59e0b" stackId="a" />
+                    <Bar dataKey="orderCost" name="Order Cost" fill="#6366f1" stackId="a" radius={[0, 0, 0, 0]} />
+                    <Bar dataKey="holdingCost" name="Holding Cost" fill="#f59e0b" stackId="a" radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -260,14 +262,16 @@ export default function OptimizationPage() {
 
         {/* Bulk PO Results */}
         {bulkResult && (
-          <div className="card">
-            <h3 className="text-lg font-semibold mb-2">
-              Bulk PO Recommendations — {bulkResult.products_needing_reorder} / {bulkResult.total_products_analyzed} products need reorder
-            </h3>
+          <div className="card !p-0 overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-100">
+              <h3 className="text-lg font-semibold">
+                Bulk PO Recommendations — <span className="text-primary-600">{bulkResult.products_needing_reorder}</span> / {bulkResult.total_products_analyzed} products need reorder
+              </h3>
+            </div>
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
+              <table className="min-w-full divide-y divide-gray-100">
                 <thead>
-                  <tr>
+                  <tr className="bg-gray-50/80">
                     <th className="table-header">Product</th>
                     <th className="table-header">Current Stock</th>
                     <th className="table-header">EOQ</th>
@@ -276,11 +280,11 @@ export default function OptimizationPage() {
                     <th className="table-header">Cost/Year</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200">
+                <tbody className="divide-y divide-gray-50">
                   {(bulkResult.recommendations || []).map((r: any, i: number) => (
-                    <tr key={i} className="hover:bg-gray-50">
+                    <tr key={i} className="hover:bg-gray-50/60 transition-colors">
                       <td className="table-cell">
-                        <div className="font-medium">{r.product.name}</div>
+                        <div className="font-semibold text-gray-900">{r.product.name}</div>
                         <div className="text-xs text-gray-500">{r.product.sku}</div>
                       </td>
                       <td className="table-cell">{r.current_stock}</td>
@@ -301,10 +305,10 @@ export default function OptimizationPage() {
         )}
 
         {!poResult && !bulkResult && !loading && !bulkLoading && (
-          <div className="card text-center py-12">
-            <ShoppingCart size={48} className="mx-auto text-gray-400 mb-4" />
+          <div className="card text-center py-20">
+            <ShoppingCart size={48} className="mx-auto text-gray-300 mb-4" />
             <h3 className="text-lg font-semibold text-gray-600">Auto-PO Generator</h3>
-            <p className="text-sm text-gray-500 mt-1">
+            <p className="text-sm text-gray-400 mt-1 max-w-md mx-auto">
               Pilih produk dan klik &quot;Generate PO&quot; untuk menghitung Economic Order Quantity (EOQ) optimal
             </p>
           </div>

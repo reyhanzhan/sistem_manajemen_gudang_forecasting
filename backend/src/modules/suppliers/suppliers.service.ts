@@ -19,8 +19,8 @@ export class SuppliersService {
     const where: any = {};
     if (search) {
       where.OR = [
-        { name: { contains: search, mode: 'insensitive' } },
-        { code: { contains: search, mode: 'insensitive' } },
+        { name: { contains: search } },
+        { code: { contains: search } },
       ];
     }
     if (isActive !== undefined) where.isActive = isActive;

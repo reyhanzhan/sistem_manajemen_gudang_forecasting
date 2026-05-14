@@ -68,13 +68,15 @@ export default function InventoryPage() {
         subtitle="Monitor stock levels across all warehouses"
       />
 
-      <div className="p-6 space-y-6">
+      <div className="page-container">
         {/* Low Stock Alerts Banner */}
         {lowStockAlerts.length > 0 && (
-          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <AlertTriangle size={18} className="text-amber-600" />
-              <span className="font-semibold text-amber-800">
+          <div className="bg-amber-50/80 border border-amber-200 rounded-2xl p-5">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="p-1.5 bg-amber-100 rounded-lg">
+                <AlertTriangle size={16} className="text-amber-600" />
+              </div>
+              <span className="font-bold text-amber-800">
                 {lowStockAlerts.length} Low Stock Alerts
               </span>
             </div>
@@ -82,13 +84,13 @@ export default function InventoryPage() {
               {lowStockAlerts.slice(0, 5).map((alert: any) => (
                 <span
                   key={alert.id}
-                  className="text-xs bg-amber-100 text-amber-700 px-2 py-1 rounded"
+                  className="badge badge-warning"
                 >
                   {alert.product?.name}: {alert.quantity} units
                 </span>
               ))}
               {lowStockAlerts.length > 5 && (
-                <span className="text-xs text-amber-600">
+                <span className="text-xs text-amber-600 font-medium">
                   +{lowStockAlerts.length - 5} more
                 </span>
               )}
@@ -100,7 +102,7 @@ export default function InventoryPage() {
         <div className="card">
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1 relative">
-              <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+              <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
               <input
                 type="text"
                 value={search}
@@ -127,11 +129,11 @@ export default function InventoryPage() {
         </div>
 
         {/* Inventory Table */}
-        <div className="card overflow-hidden">
+        <div className="card !p-0 overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
+            <table className="min-w-full divide-y divide-gray-100">
+              <thead>
+                <tr className="bg-gray-50/80">
                   <th className="table-header">Product</th>
                   <th className="table-header">SKU</th>
                   <th className="table-header">Warehouse</th>
@@ -141,42 +143,42 @@ export default function InventoryPage() {
                   <th className="table-header text-right">Value</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200">
+              <tbody className="divide-y divide-gray-50">
                 {loading ? (
                   Array.from({ length: 6 }).map((_, i) => (
                     <tr key={i}>
                       {Array.from({ length: 7 }).map((_, j) => (
                         <td key={j} className="table-cell">
-                          <div className="h-4 bg-gray-200 rounded animate-pulse w-3/4" />
+                          <div className="skeleton h-4 w-3/4" />
                         </td>
                       ))}
                     </tr>
                   ))
                 ) : inventory.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="text-center py-10 text-gray-400">
-                      <Package size={40} className="mx-auto mb-2 opacity-50" />
-                      No inventory records found
+                    <td colSpan={7} className="text-center py-16 text-gray-400">
+                      <Package size={40} className="mx-auto mb-3 opacity-40" />
+                      <p className="font-medium">No inventory records found</p>
                     </td>
                   </tr>
                 ) : (
                   inventory.map((item: any) => {
                     const status = getStockStatus(item);
                     return (
-                      <tr key={item.id} className="hover:bg-gray-50">
-                        <td className="table-cell font-medium">
+                      <tr key={item.id} className="hover:bg-gray-50/60 transition-colors">
+                        <td className="table-cell font-semibold text-gray-900">
                           {item.product?.name || '-'}
                         </td>
-                        <td className="table-cell font-mono text-sm">
+                        <td className="table-cell font-mono text-xs text-gray-500">
                           {item.product?.sku || '-'}
                         </td>
-                        <td className="table-cell text-sm">
+                        <td className="table-cell text-sm text-gray-600">
                           {item.warehouse?.name || '-'}
                         </td>
-                        <td className="table-cell text-right font-semibold">
+                        <td className="table-cell text-right font-bold text-gray-900">
                           {item.quantity?.toLocaleString()}
                         </td>
-                        <td className="table-cell text-right text-gray-500">
+                        <td className="table-cell text-right text-gray-400">
                           {item.product?.minimumStock?.toLocaleString() || '-'}
                         </td>
                         <td className="table-cell">
@@ -184,7 +186,7 @@ export default function InventoryPage() {
                             {status.label}
                           </span>
                         </td>
-                        <td className="table-cell text-right text-sm">
+                        <td className="table-cell text-right text-sm font-medium">
                           Rp {((item.quantity || 0) * (item.product?.price || 0)).toLocaleString('id-ID')}
                         </td>
                       </tr>

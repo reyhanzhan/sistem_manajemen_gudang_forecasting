@@ -20,8 +20,8 @@ export class ProductsService {
     const where: Prisma.ProductWhereInput = {};
     if (search) {
       where.OR = [
-        { name: { contains: search, mode: 'insensitive' } },
-        { sku: { contains: search, mode: 'insensitive' } },
+        { name: { contains: search } },
+        { sku: { contains: search } },
       ];
     }
     if (categoryId) where.categoryId = categoryId;

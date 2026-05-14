@@ -82,11 +82,11 @@ export default function ProductsPage() {
   return (
     <div>
       <Header title="Products" subtitle="Manage your product catalog" />
-      <div className="p-6 space-y-6">
+      <div className="page-container">
         {/* Toolbar */}
         <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
-          <div className="relative flex-1 max-w-sm">
-            <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+          <div className="relative flex-1 max-w-md">
+            <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
             <input type="text" value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} placeholder="Search products..." className="input-field pl-10" />
           </div>
           <button onClick={() => { resetForm(); setShowForm(true); }} className="btn-primary flex items-center gap-2">
@@ -94,43 +94,43 @@ export default function ProductsPage() {
           </button>
         </div>
 
-        {/* Form Modal */}
+        {/* Form */}
         {showForm && (
-          <div className="card border-2 border-primary-200">
-            <h3 className="text-lg font-semibold mb-4">{editingProduct ? 'Edit Product' : 'New Product'}</h3>
+          <div className="card border border-primary-200 bg-primary-50/30">
+            <h3 className="text-base font-bold text-gray-900 mb-5">{editingProduct ? 'Edit Product' : 'New Product'}</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Name *</label>
+                <label className="input-label">Name *</label>
                 <input className="input-field" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">SKU *</label>
+                <label className="input-label">SKU *</label>
                 <input className="input-field" value={form.sku} onChange={(e) => setForm({ ...form, sku: e.target.value })} />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Unit</label>
+                <label className="input-label">Unit</label>
                 <select className="input-field" value={form.unit} onChange={(e) => setForm({ ...form, unit: e.target.value })}>
                   <option>PCS</option><option>KG</option><option>LITER</option><option>BOX</option><option>PACK</option>
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Price (Rp) *</label>
+                <label className="input-label">Price (Rp) *</label>
                 <input type="number" className="input-field" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Cost (Rp) *</label>
+                <label className="input-label">Cost (Rp) *</label>
                 <input type="number" className="input-field" value={form.cost} onChange={(e) => setForm({ ...form, cost: e.target.value })} />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Min Stock *</label>
+                <label className="input-label">Min Stock *</label>
                 <input type="number" className="input-field" value={form.minimumStock} onChange={(e) => setForm({ ...form, minimumStock: e.target.value })} />
               </div>
               <div className="md:col-span-2 lg:col-span-3">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                <label className="input-label">Description</label>
                 <textarea className="input-field" rows={2} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
               </div>
             </div>
-            <div className="flex gap-2 mt-4">
+            <div className="flex gap-3 mt-5 pt-4 border-t border-primary-100">
               <button onClick={handleSave} className="btn-primary">Save Product</button>
               <button onClick={resetForm} className="btn-secondary">Cancel</button>
             </div>
@@ -138,11 +138,11 @@ export default function ProductsPage() {
         )}
 
         {/* Products Table */}
-        <div className="card overflow-hidden">
+        <div className="card !p-0 overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
+            <table className="min-w-full divide-y divide-gray-100">
+              <thead>
+                <tr className="bg-gray-50/80">
                   <th className="table-header">Product</th>
                   <th className="table-header">SKU</th>
                   <th className="table-header">Category</th>
@@ -150,28 +150,37 @@ export default function ProductsPage() {
                   <th className="table-header text-right">Cost</th>
                   <th className="table-header text-right">Min Stock</th>
                   <th className="table-header">Status</th>
-                  <th className="table-header">Actions</th>
+                  <th className="table-header text-center">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200">
+              <tbody className="divide-y divide-gray-50">
                 {loading ? (
                   Array.from({ length: 5 }).map((_, i) => (
                     <tr key={i}>{Array.from({ length: 8 }).map((_, j) => (
-                      <td key={j} className="table-cell"><div className="h-4 bg-gray-200 rounded animate-pulse w-3/4" /></td>
+                      <td key={j} className="table-cell"><div className="skeleton h-4 w-3/4" /></td>
                     ))}</tr>
                   ))
                 ) : products.length === 0 ? (
-                  <tr><td colSpan={8} className="text-center py-10 text-gray-400">
-                    <Package size={40} className="mx-auto mb-2 opacity-50" />No products found
+                  <tr><td colSpan={8} className="text-center py-16 text-gray-400">
+                    <Package size={40} className="mx-auto mb-3 opacity-40" />
+                    <p className="font-medium">No products found</p>
+                    <p className="text-xs mt-1">Try adjusting your search or add a new product</p>
                   </td></tr>
                 ) : (
                   products.map((p: any) => (
-                    <tr key={p.id} className="hover:bg-gray-50">
-                      <td className="table-cell font-medium">{p.name}</td>
-                      <td className="table-cell font-mono text-sm">{p.sku}</td>
-                      <td className="table-cell text-sm">{p.category?.name || '-'}</td>
-                      <td className="table-cell text-right">Rp {p.price?.toLocaleString('id-ID')}</td>
-                      <td className="table-cell text-right">Rp {p.cost?.toLocaleString('id-ID')}</td>
+                    <tr key={p.id} className="hover:bg-gray-50/60 transition-colors">
+                      <td className="table-cell">
+                        <div className="flex items-center gap-3">
+                          <div className="w-9 h-9 rounded-xl bg-primary-50 flex items-center justify-center">
+                            <Package size={16} className="text-primary-600" />
+                          </div>
+                          <span className="font-semibold text-gray-900">{p.name}</span>
+                        </div>
+                      </td>
+                      <td className="table-cell font-mono text-xs text-gray-500">{p.sku}</td>
+                      <td className="table-cell text-sm text-gray-600">{p.category?.name || '-'}</td>
+                      <td className="table-cell text-right font-semibold">Rp {p.price?.toLocaleString('id-ID')}</td>
+                      <td className="table-cell text-right text-gray-500">Rp {p.cost?.toLocaleString('id-ID')}</td>
                       <td className="table-cell text-right">{p.minimumStock}</td>
                       <td className="table-cell">
                         <span className={`badge ${p.status === 'ACTIVE' ? 'badge-success' : 'badge-danger'}`}>
@@ -179,11 +188,11 @@ export default function ProductsPage() {
                         </span>
                       </td>
                       <td className="table-cell">
-                        <div className="flex gap-1">
-                          <button onClick={() => editProduct(p)} className="p-1.5 text-gray-500 hover:text-primary-600 hover:bg-primary-50 rounded">
+                        <div className="flex gap-1 justify-center">
+                          <button onClick={() => editProduct(p)} className="btn-icon">
                             <Pencil size={14} />
                           </button>
-                          <button onClick={() => handleDelete(p.id)} className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded">
+                          <button onClick={() => handleDelete(p.id)} className="p-2 rounded-xl text-gray-400 hover:text-red-600 hover:bg-red-50 transition-all">
                             <Trash2 size={14} />
                           </button>
                         </div>
@@ -197,13 +206,13 @@ export default function ProductsPage() {
 
           {/* Pagination */}
           {meta.totalPages > 1 && (
-            <div className="flex items-center justify-between p-4 border-t border-gray-200">
+            <div className="flex items-center justify-between px-5 py-4 border-t border-gray-100 bg-gray-50/40">
               <span className="text-sm text-gray-500">
-                Showing page {meta.page} of {meta.totalPages} ({meta.total} total)
+                Page <span className="font-semibold text-gray-700">{meta.page}</span> of {meta.totalPages} · {meta.total} products
               </span>
               <div className="flex gap-2">
-                <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1} className="btn-secondary text-sm px-3 py-1.5">Previous</button>
-                <button onClick={() => setPage((p) => Math.min(meta.totalPages, p + 1))} disabled={page === meta.totalPages} className="btn-secondary text-sm px-3 py-1.5">Next</button>
+                <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1} className="btn-secondary text-sm px-3 py-1.5 disabled:opacity-40">Previous</button>
+                <button onClick={() => setPage((p) => Math.min(meta.totalPages, p + 1))} disabled={page === meta.totalPages} className="btn-secondary text-sm px-3 py-1.5 disabled:opacity-40">Next</button>
               </div>
             </div>
           )}

@@ -87,24 +87,24 @@ export default function ForecastPage() {
         subtitle="Machine learning-powered demand prediction and reorder suggestions"
       />
 
-      <div className="p-6 space-y-6">
+      <div className="page-container">
         {/* ─── AI Service Status ──────────────────────── */}
         <div className="flex items-center gap-4">
-          <div className={`flex items-center gap-2 px-4 py-2 rounded-lg ${
+          <div className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl ${
             aiHealth?.status === 'healthy'
-              ? 'bg-green-50 text-green-700 border border-green-200'
+              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
               : 'bg-red-50 text-red-700 border border-red-200'
           }`}>
             {aiHealth?.status === 'healthy' ? (
-              <CheckCircle size={18} />
+              <CheckCircle size={16} />
             ) : (
-              <AlertTriangle size={18} />
+              <AlertTriangle size={16} />
             )}
             <span className="text-sm font-medium">
               AI Service: {aiHealth?.status || 'Unknown'}
             </span>
             {aiHealth?.model_version && (
-              <span className="text-xs opacity-70">
+              <span className="text-xs opacity-60">
                 (Model: {aiHealth.model_version})
               </span>
             )}
@@ -123,15 +123,15 @@ export default function ForecastPage() {
         {/* ─── Forecast Controls ─────────────────────── */}
         <div className="card">
           <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-            <Brain size={20} className="text-primary-600" />
+            <div className="p-2 rounded-xl bg-gradient-to-br from-primary-50 to-primary-100">
+              <Brain size={18} className="text-primary-600" />
+            </div>
             Generate Forecast
           </h3>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Product
-              </label>
+              <label className="input-label">Product</label>
               <select
                 value={selectedProduct}
                 onChange={(e) => setSelectedProduct(e.target.value)}
@@ -147,9 +147,7 @@ export default function ForecastPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Forecast Period (Days)
-              </label>
+              <label className="input-label">Forecast Period (Days)</label>
               <select
                 value={periodDays}
                 onChange={(e) => setPeriodDays(Number(e.target.value))}
@@ -185,37 +183,37 @@ export default function ForecastPage() {
           <>
             {/* Summary Cards */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div className="card text-center">
-                <p className="text-sm text-gray-500">Predicted Demand</p>
+              <div className="card-hover text-center">
+                <p className="text-sm text-gray-500 mb-1">Predicted Demand</p>
                 <p className="text-3xl font-bold text-primary-600">
                   {Math.round(forecast.predicted_demand)}
                 </p>
-                <p className="text-xs text-gray-400">
+                <p className="text-xs text-gray-400 mt-1">
                   units in {forecast.period_days} days
                 </p>
               </div>
-              <div className="card text-center">
-                <p className="text-sm text-gray-500">Daily Average</p>
-                <p className="text-3xl font-bold text-blue-600">
+              <div className="card-hover text-center">
+                <p className="text-sm text-gray-500 mb-1">Daily Average</p>
+                <p className="text-3xl font-bold text-primary-500">
                   {forecast.daily_average?.toFixed(1)}
                 </p>
-                <p className="text-xs text-gray-400">units/day</p>
+                <p className="text-xs text-gray-400 mt-1">units/day</p>
               </div>
-              <div className="card text-center">
-                <p className="text-sm text-gray-500">Current Stock</p>
-                <p className="text-3xl font-bold text-green-600">
+              <div className="card-hover text-center">
+                <p className="text-sm text-gray-500 mb-1">Current Stock</p>
+                <p className="text-3xl font-bold text-emerald-600">
                   {forecast.current_stock}
                 </p>
-                <p className="text-xs text-gray-400">units available</p>
+                <p className="text-xs text-gray-400 mt-1">units available</p>
               </div>
-              <div className="card text-center">
-                <p className="text-sm text-gray-500">Suggested Reorder</p>
+              <div className="card-hover text-center">
+                <p className="text-sm text-gray-500 mb-1">Suggested Reorder</p>
                 <p className={`text-3xl font-bold ${
-                  forecast.suggested_reorder > 0 ? 'text-red-600' : 'text-green-600'
+                  forecast.suggested_reorder > 0 ? 'text-red-600' : 'text-emerald-600'
                 }`}>
                   {forecast.suggested_reorder}
                 </p>
-                <p className="text-xs text-gray-400">
+                <p className="text-xs text-gray-400 mt-1">
                   {forecast.suggested_reorder > 0 ? 'units to order' : 'stock sufficient'}
                 </p>
               </div>
@@ -223,20 +221,26 @@ export default function ForecastPage() {
 
             {/* Confidence Interval */}
             <div className="card">
-              <h3 className="text-lg font-semibold mb-2 flex items-center gap-2">
-                <BarChart3 size={20} className="text-primary-600" />
+              <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                <div className="p-2 rounded-xl bg-gradient-to-br from-primary-50 to-primary-100">
+                  <BarChart3 size={16} className="text-primary-600" />
+                </div>
                 Confidence Range (95%)
               </h3>
               <div className="flex items-center gap-4 text-sm">
-                <span className="text-gray-500">Lower bound:</span>
-                <span className="font-semibold">
-                  {Math.round(forecast.confidence_lower)} units
-                </span>
-                <span className="text-gray-300">|</span>
-                <span className="text-gray-500">Upper bound:</span>
-                <span className="font-semibold">
-                  {Math.round(forecast.confidence_upper)} units
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="text-gray-500">Lower bound:</span>
+                  <span className="font-bold text-gray-900">
+                    {Math.round(forecast.confidence_lower)} units
+                  </span>
+                </div>
+                <span className="text-gray-200">|</span>
+                <div className="flex items-center gap-2">
+                  <span className="text-gray-500">Upper bound:</span>
+                  <span className="font-bold text-gray-900">
+                    {Math.round(forecast.confidence_upper)} units
+                  </span>
+                </div>
               </div>
             </div>
 
@@ -247,17 +251,17 @@ export default function ForecastPage() {
               </h3>
               <ResponsiveContainer width="100%" height={400}>
                 <AreaChart data={chartData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="date" tick={{ fontSize: 11 }} />
-                  <YAxis />
-                  <Tooltip />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                  <XAxis dataKey="date" tick={{ fontSize: 11 }} stroke="#94a3b8" />
+                  <YAxis stroke="#94a3b8" />
+                  <Tooltip contentStyle={{ borderRadius: 12, border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.08)' }} />
                   <Legend />
                   <Area
                     type="monotone"
                     dataKey="upper"
                     name="Upper Bound"
                     stroke="none"
-                    fill="#dbeafe"
+                    fill="#e0e7ff"
                   />
                   <Area
                     type="monotone"
@@ -270,9 +274,9 @@ export default function ForecastPage() {
                     type="monotone"
                     dataKey="predicted"
                     name="Predicted Demand"
-                    stroke="#2563eb"
-                    strokeWidth={2}
-                    dot={{ r: 3 }}
+                    stroke="#6366f1"
+                    strokeWidth={2.5}
+                    dot={{ r: 3, fill: '#6366f1' }}
                   />
                 </AreaChart>
               </ResponsiveContainer>
@@ -282,7 +286,7 @@ export default function ForecastPage() {
             {forecast.model_metrics && (
               <div className="card">
                 <h3 className="text-lg font-semibold mb-4">Model Performance</h3>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm bg-gray-50/80 rounded-xl p-4">
                   <div>
                     <span className="text-gray-500">Model:</span>
                     <span className="ml-2 font-medium">

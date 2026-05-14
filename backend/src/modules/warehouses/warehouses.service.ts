@@ -21,12 +21,12 @@ export class WarehousesService {
     const where: Prisma.WarehouseWhereInput = {};
     if (search) {
       where.OR = [
-        { name: { contains: search, mode: 'insensitive' } },
-        { code: { contains: search, mode: 'insensitive' } },
+        { name: { contains: search } },
+        { code: { contains: search } },
       ];
     }
     if (status) where.status = status;
-    if (city) where.city = { contains: city, mode: 'insensitive' };
+    if (city) where.city = { contains: city };
 
     const [data, total] = await Promise.all([
       this.prisma.warehouse.findMany({

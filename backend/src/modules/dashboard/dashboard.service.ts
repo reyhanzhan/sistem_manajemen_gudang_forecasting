@@ -94,12 +94,12 @@ export class DashboardService {
     });
 
     // Group by date and type
-    const trends: Record<string, { STOCK_IN: number; STOCK_OUT: number; TRANSFER: number }> = {};
+    const trends: Record<string, { STOCK_IN: number; STOCK_OUT: number; TRANSFER: number; ADJUSTMENT: number }> = {};
 
     movements.forEach((m) => {
       const dateKey = m.createdAt.toISOString().slice(0, 10);
       if (!trends[dateKey]) {
-        trends[dateKey] = { STOCK_IN: 0, STOCK_OUT: 0, TRANSFER: 0 };
+        trends[dateKey] = { STOCK_IN: 0, STOCK_OUT: 0, TRANSFER: 0, ADJUSTMENT: 0 };
       }
       const totalQty = m.lines.reduce((sum, l) => sum + l.quantity, 0);
       trends[dateKey][m.type] += totalQty;

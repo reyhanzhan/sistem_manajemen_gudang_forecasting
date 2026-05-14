@@ -143,7 +143,7 @@ export default function ScannerPage() {
     <div>
       <Header title="Barcode Scanner" subtitle="Scan barcode menggunakan kamera HP untuk identifikasi produk" />
 
-      <div className="p-6 space-y-6">
+      <div className="page-container">
         {/* Scanner Controls */}
         <div className="card">
           <div className="flex flex-wrap items-end gap-4">
@@ -160,7 +160,7 @@ export default function ScannerPage() {
             )}
 
             <div className="flex-1 min-w-[200px]">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Input Manual (SKU / Barcode)</label>
+              <label className="input-label">Input Manual (SKU / Barcode)</label>
               <div className="flex gap-2">
                 <input
                   type="text"
@@ -168,7 +168,7 @@ export default function ScannerPage() {
                   onChange={(e) => setManualCode(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleManualSearch()}
                   placeholder="Masukkan SKU atau kode barcode..."
-                  className="input flex-1"
+                  className="input-field flex-1"
                 />
                 <button onClick={handleManualSearch} className="btn-secondary">
                   <ScanBarcode size={18} />
@@ -215,11 +215,11 @@ export default function ScannerPage() {
 
         {/* Product Result */}
         {product && (
-          <div className="card border-2 border-green-400 bg-green-50">
+          <div className="card border-2 border-emerald-300 bg-emerald-50 rounded-2xl">
             <div className="flex items-start gap-4">
-              <CheckCircle className="text-green-500 mt-1" size={24} />
+              <CheckCircle className="text-emerald-500 mt-1" size={24} />
               <div className="flex-1">
-                <h3 className="text-lg font-bold text-green-800">Produk Ditemukan</h3>
+                <h3 className="text-lg font-bold text-emerald-800">Produk Ditemukan</h3>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-3">
                   <div>
                     <p className="text-xs text-gray-500">SKU</p>
@@ -265,22 +265,22 @@ export default function ScannerPage() {
         {scanHistory.length > 0 && (
           <div className="card">
             <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-              <ScanBarcode size={20} />
+              <div className="p-1.5 rounded-lg bg-gradient-to-br from-primary-50 to-primary-100"><ScanBarcode size={14} className="text-primary-600" /></div>
               Riwayat Scan
             </h3>
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
+              <table className="min-w-full divide-y divide-gray-100">
                 <thead>
-                  <tr>
+                  <tr className="bg-gray-50/80">
                     <th className="table-header">Time</th>
                     <th className="table-header">Code</th>
                     <th className="table-header">Product</th>
                     <th className="table-header">SKU</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200">
+                <tbody className="divide-y divide-gray-50">
                   {scanHistory.map((entry, i) => (
-                    <tr key={i} className="hover:bg-gray-50">
+                    <tr key={i} className="hover:bg-gray-50/60 transition-colors">
                       <td className="table-cell text-sm">{entry.time}</td>
                       <td className="table-cell font-mono text-sm">{entry.code}</td>
                       <td className="table-cell">{entry.product.name}</td>
@@ -295,14 +295,14 @@ export default function ScannerPage() {
 
         {/* Instructions */}
         {!scanning && !product && !error && (
-          <div className="card text-center py-12">
-            <ScanBarcode size={48} className="mx-auto text-gray-400 mb-4" />
+          <div className="card text-center py-20">
+            <ScanBarcode size={48} className="mx-auto text-gray-300 mb-4" />
             <h3 className="text-lg font-semibold text-gray-600">Barcode Scanner</h3>
-            <p className="text-sm text-gray-500 mt-1 max-w-md mx-auto">
+            <p className="text-sm text-gray-400 mt-1 max-w-md mx-auto">
               Gunakan kamera HP untuk memindai barcode produk, atau masukkan SKU secara manual.
               Mendukung format EAN-13, EAN-8, Code 128, Code 39, QR Code.
             </p>
-            <p className="text-xs text-gray-400 mt-3">
+            <p className="text-xs text-gray-300 mt-3">
               PWA: Fitur ini berfungsi offline — data produk tersimpan di IndexedDB
             </p>
           </div>

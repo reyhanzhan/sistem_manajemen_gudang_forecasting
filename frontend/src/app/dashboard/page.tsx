@@ -13,6 +13,7 @@ import {
   Wifi,
   WifiOff,
   Activity,
+  RefreshCw,
 } from 'lucide-react';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -25,16 +26,16 @@ import StatCard from '@/components/ui/StatCard';
 import { dashboardApi } from '@/lib/api';
 import { useDashboardRefresh, useSocket } from '@/lib/socket';
 
-const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316'];
+const COLORS = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#14b8a6', '#f97316'];
 
 // Heatmap color based on stock velocity
 function getHeatColor(value: number, max: number): string {
   const ratio = max > 0 ? value / max : 0;
-  if (ratio > 0.8) return '#ef4444'; // hot - fast moving
+  if (ratio > 0.8) return '#ef4444';
   if (ratio > 0.6) return '#f97316';
   if (ratio > 0.4) return '#f59e0b';
   if (ratio > 0.2) return '#84cc16';
-  return '#22c55e'; // cold - slow moving
+  return '#22c55e';
 }
 
 export default function DashboardPage() {
@@ -131,23 +132,39 @@ export default function DashboardPage() {
       <Header
         title="Dashboard"
         subtitle="Overview of your warehouse operations"
+        actions={
+          <button onClick={loadDashboard} className="btn-ghost flex items-center gap-2 text-xs">
+            <RefreshCw size={14} /> Refresh
+          </button>
+        }
       />
 
-      <div className="p-6 space-y-6">
+      <div className="page-container">
         {/* Real-time Status Bar */}
-        <div className="flex items-center justify-between text-xs text-gray-500">
+        <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             {isConnected ? (
-              <><Wifi size={14} className="text-green-500" /> <span className="text-green-600">Real-time connected</span></>
+              <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-50 border border-emerald-200 rounded-lg">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+                </span>
+                <span className="text-xs font-medium text-emerald-700">Live</span>
+              </div>
             ) : (
-              <><WifiOff size={14} className="text-gray-400" /> <span>Connecting...</span></>
+              <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg">
+                <WifiOff size={12} className="text-gray-400" />
+                <span className="text-xs text-gray-500">Connecting...</span>
+              </div>
             )}
           </div>
-          {lastUpdate && <span>Last updated: {lastUpdate}</span>}
+          {lastUpdate && (
+            <span className="text-xs text-gray-400 font-medium">Last updated: {lastUpdate}</span>
+          )}
         </div>
 
-        {/* ─── Stat Cards ────────────────────────────── */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Stat Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
           <StatCard
             title="Total Products"
             value={counts.activeProducts || 0}
@@ -159,13 +176,13 @@ export default function DashboardPage() {
             title="Warehouses"
             value={counts.totalWarehouses || 0}
             icon={Warehouse}
-            iconColor="bg-green-100 text-green-600"
+            iconColor="bg-emerald-50 text-emerald-600"
           />
           <StatCard
             title="Pending Movements"
             value={counts.pendingMovements || 0}
             icon={Clock}
-            iconColor="bg-yellow-100 text-yellow-600"
+            iconColor="bg-amber-50 text-amber-600"
             change="Awaiting approval"
             changeType="neutral"
           />
@@ -173,79 +190,97 @@ export default function DashboardPage() {
             title="Low Stock Alerts"
             value={stats.lowStockCount || 0}
             icon={AlertTriangle}
-            iconColor="bg-red-100 text-red-600"
+            iconColor="bg-red-50 text-red-600"
             change={`${stats.outOfStockCount || 0} out of stock`}
             changeType="negative"
           />
         </div>
 
-        {/* ─── Second Row Stats ──────────────────────── */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* Second Row Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
           <StatCard
             title="Total Inventory Value"
             value={`Rp ${(stats.totalValue || 0).toLocaleString('id-ID')}`}
             icon={DollarSign}
-            iconColor="bg-emerald-100 text-emerald-600"
+            iconColor="bg-emerald-50 text-emerald-600"
           />
           <StatCard
             title="Active Suppliers"
             value={counts.totalSuppliers || 0}
             icon={Truck}
-            iconColor="bg-purple-100 text-purple-600"
+            iconColor="bg-violet-50 text-violet-600"
           />
           <StatCard
             title="Total Movements"
             value={counts.totalMovements || 0}
             icon={ArrowLeftRight}
-            iconColor="bg-blue-100 text-blue-600"
+            iconColor="bg-sky-50 text-sky-600"
           />
         </div>
 
-        {/* ─── Charts Row ────────────────────────────── */}
+        {/* Charts Row */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Movement Trends - Area Chart */}
+          {/* Movement Trends */}
           <div className="card">
-            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-              <Activity size={18} />
-              Movement Trends (30 Days)
-            </h3>
-            <ResponsiveContainer width="100%" height={300}>
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h3 className="text-base font-bold text-gray-900">Movement Trends</h3>
+                <p className="text-xs text-gray-500 mt-0.5">Last 14 days activity</p>
+              </div>
+              <div className="p-2 bg-primary-50 rounded-xl">
+                <Activity size={18} className="text-primary-600" />
+              </div>
+            </div>
+            <ResponsiveContainer width="100%" height={280}>
               <AreaChart data={trends.slice(-14)}>
                 <defs>
                   <linearGradient id="colorIn" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
+                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.2} />
                     <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
                   </linearGradient>
                   <linearGradient id="colorOut" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#ef4444" stopOpacity={0.3} />
+                    <stop offset="5%" stopColor="#ef4444" stopOpacity={0.2} />
                     <stop offset="95%" stopColor="#ef4444" stopOpacity={0} />
                   </linearGradient>
+                  <linearGradient id="colorTransfer" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#6366f1" stopOpacity={0.15} />
+                    <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
+                  </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="date" tick={{ fontSize: 11 }} />
-                <YAxis />
-                <Tooltip />
+                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#9ca3af' }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize: 11, fill: '#9ca3af' }} axisLine={false} tickLine={false} />
+                <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1)' }} />
                 <Legend />
-                <Area type="monotone" dataKey="STOCK_IN" name="Stock In" stroke="#10b981" fill="url(#colorIn)" />
-                <Area type="monotone" dataKey="STOCK_OUT" name="Stock Out" stroke="#ef4444" fill="url(#colorOut)" />
-                <Area type="monotone" dataKey="TRANSFER" name="Transfer" stroke="#3b82f6" fill="#3b82f620" />
+                <Area type="monotone" dataKey="STOCK_IN" name="Stock In" stroke="#10b981" strokeWidth={2} fill="url(#colorIn)" />
+                <Area type="monotone" dataKey="STOCK_OUT" name="Stock Out" stroke="#ef4444" strokeWidth={2} fill="url(#colorOut)" />
+                <Area type="monotone" dataKey="TRANSFER" name="Transfer" stroke="#6366f1" strokeWidth={2} fill="url(#colorTransfer)" />
               </AreaChart>
             </ResponsiveContainer>
           </div>
 
           {/* Warehouse Utilization */}
           <div className="card">
-            <h3 className="text-lg font-semibold mb-4">Warehouse Utilization</h3>
-            <ResponsiveContainer width="100%" height={300}>
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h3 className="text-base font-bold text-gray-900">Warehouse Utilization</h3>
+                <p className="text-xs text-gray-500 mt-0.5">Stock distribution across locations</p>
+              </div>
+              <div className="p-2 bg-violet-50 rounded-xl">
+                <Warehouse size={18} className="text-violet-600" />
+              </div>
+            </div>
+            <ResponsiveContainer width="100%" height={280}>
               <PieChart>
                 <Pie
                   data={warehouseUtil}
                   cx="50%"
                   cy="50%"
-                  innerRadius={60}
-                  outerRadius={100}
+                  innerRadius={65}
+                  outerRadius={105}
                   dataKey="totalStock"
                   nameKey="name"
+                  paddingAngle={3}
                   label={({ name, utilizationPercent }) =>
                     `${name}: ${utilizationPercent}%`
                   }
@@ -254,19 +289,23 @@ export default function DashboardPage() {
                     <Cell key={index} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
-                <Tooltip />
+                <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1)' }} />
               </PieChart>
             </ResponsiveContainer>
           </div>
         </div>
 
-        {/* ─── Product Velocity Heatmap ──────────────── */}
+        {/* Product Velocity Heatmap */}
         {heatmapData.length > 0 && (
           <div className="card">
-            <h3 className="text-lg font-semibold mb-2">Product Velocity Heatmap</h3>
-            <p className="text-sm text-gray-500 mb-4">
-              Area menunjukkan volume pergerakan barang. Merah = Fast-moving, Hijau = Slow-moving
-            </p>
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h3 className="text-base font-bold text-gray-900">Product Velocity Heatmap</h3>
+                <p className="text-xs text-gray-500 mt-0.5">
+                  Area menunjukkan volume pergerakan barang. Merah = Fast-moving, Hijau = Slow-moving
+                </p>
+              </div>
+            </div>
             <ResponsiveContainer width="100%" height={300}>
               <Treemap
                 data={heatmapData}
@@ -275,21 +314,26 @@ export default function DashboardPage() {
                 content={<CustomTreemapContent />}
               />
             </ResponsiveContainer>
-            <div className="flex items-center gap-4 mt-3 justify-center text-xs text-gray-600">
-              <span className="flex items-center gap-1"><span className="w-3 h-3 rounded" style={{ background: '#ef4444' }} /> Hot (Fast-moving)</span>
-              <span className="flex items-center gap-1"><span className="w-3 h-3 rounded" style={{ background: '#f59e0b' }} /> Warm</span>
-              <span className="flex items-center gap-1"><span className="w-3 h-3 rounded" style={{ background: '#22c55e' }} /> Cold (Slow-moving)</span>
+            <div className="flex items-center gap-6 mt-4 justify-center text-xs text-gray-500">
+              <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full" style={{ background: '#ef4444' }} /> Fast-moving</span>
+              <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full" style={{ background: '#f59e0b' }} /> Moderate</span>
+              <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full" style={{ background: '#22c55e' }} /> Slow-moving</span>
             </div>
           </div>
         )}
 
-        {/* ─── Recent Movements ──────────────────────── */}
+        {/* Recent Movements */}
         <div className="card">
-          <h3 className="text-lg font-semibold mb-4">Recent Movements</h3>
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
+          <div className="flex items-center justify-between mb-5">
+            <div>
+              <h3 className="text-base font-bold text-gray-900">Recent Movements</h3>
+              <p className="text-xs text-gray-500 mt-0.5">Latest stock operations</p>
+            </div>
+          </div>
+          <div className="overflow-x-auto rounded-xl border border-gray-100">
+            <table className="min-w-full divide-y divide-gray-100">
               <thead>
-                <tr>
+                <tr className="bg-gray-50/80">
                   <th className="table-header">Reference</th>
                   <th className="table-header">Type</th>
                   <th className="table-header">Status</th>
@@ -298,10 +342,10 @@ export default function DashboardPage() {
                   <th className="table-header">Date</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200">
+              <tbody className="divide-y divide-gray-50">
                 {(overview?.recentMovements || []).map((mov: any) => (
-                  <tr key={mov.id} className="hover:bg-gray-50">
-                    <td className="table-cell font-mono text-sm">
+                  <tr key={mov.id} className="hover:bg-gray-50/60 transition-colors">
+                    <td className="table-cell font-mono text-xs font-semibold text-gray-800">
                       {mov.referenceNumber}
                     </td>
                     <td className="table-cell">
@@ -331,12 +375,14 @@ export default function DashboardPage() {
                       </span>
                     </td>
                     <td className="table-cell text-sm">
-                      {mov.sourceWarehouse?.code || '-'} → {mov.destinationWarehouse?.code || '-'}
+                      <span className="text-gray-900 font-medium">{mov.sourceWarehouse?.code || '-'}</span>
+                      <span className="text-gray-400 mx-1">→</span>
+                      <span className="text-gray-900 font-medium">{mov.destinationWarehouse?.code || '-'}</span>
                     </td>
-                    <td className="table-cell text-sm">
+                    <td className="table-cell text-sm text-gray-600">
                       {mov.createdBy?.firstName} {mov.createdBy?.lastName}
                     </td>
-                    <td className="table-cell text-sm text-gray-500">
+                    <td className="table-cell text-sm text-gray-400">
                       {new Date(mov.createdAt).toLocaleDateString('id-ID')}
                     </td>
                   </tr>

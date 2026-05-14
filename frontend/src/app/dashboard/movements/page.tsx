@@ -124,17 +124,17 @@ export default function MovementsPage() {
   return (
     <div>
       <Header title="Stock Movements" subtitle="Track inventory IN / OUT / Transfer operations" />
-      <div className="p-6 space-y-6">
+      <div className="page-container">
         {/* Toolbar */}
         <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
           <div className="flex gap-2">
-            <select value={typeFilter} onChange={(e) => { setTypeFilter(e.target.value); setPage(1); }} className="input-field text-sm">
+            <select value={typeFilter} onChange={(e) => { setTypeFilter(e.target.value); setPage(1); }} className="input-field text-sm w-auto">
               <option value="">All Types</option>
               <option value="STOCK_IN">Stock In</option>
               <option value="STOCK_OUT">Stock Out</option>
               <option value="TRANSFER">Transfer</option>
             </select>
-            <select value={statusFilter} onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }} className="input-field text-sm">
+            <select value={statusFilter} onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }} className="input-field text-sm w-auto">
               <option value="">All Status</option>
               <option value="PENDING">Pending</option>
               <option value="COMPLETED">Completed</option>
@@ -148,11 +148,11 @@ export default function MovementsPage() {
 
         {/* Create Form */}
         {showForm && (
-          <div className="card border-2 border-primary-200">
-            <h3 className="text-lg font-semibold mb-4">Create Stock Movement</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+          <div className="card border border-primary-200 bg-primary-50/30">
+            <h3 className="text-base font-bold text-gray-900 mb-5">Create Stock Movement</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Type *</label>
+                <label className="input-label">Type *</label>
                 <select className="input-field" value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })}>
                   <option value="STOCK_IN">Stock In</option>
                   <option value="STOCK_OUT">Stock Out</option>
@@ -161,7 +161,7 @@ export default function MovementsPage() {
               </div>
               {(form.type === 'STOCK_OUT' || form.type === 'TRANSFER') && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Source Warehouse *</label>
+                  <label className="input-label">Source Warehouse *</label>
                   <select className="input-field" value={form.sourceWarehouseId} onChange={(e) => setForm({ ...form, sourceWarehouseId: e.target.value })}>
                     <option value="">Select...</option>
                     {warehouses.map((wh: any) => <option key={wh.id} value={wh.id}>{wh.name}</option>)}
@@ -170,7 +170,7 @@ export default function MovementsPage() {
               )}
               {(form.type === 'STOCK_IN' || form.type === 'TRANSFER') && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Destination Warehouse *</label>
+                  <label className="input-label">Destination Warehouse *</label>
                   <select className="input-field" value={form.destinationWarehouseId} onChange={(e) => setForm({ ...form, destinationWarehouseId: e.target.value })}>
                     <option value="">Select...</option>
                     {warehouses.map((wh: any) => <option key={wh.id} value={wh.id}>{wh.name}</option>)}
@@ -180,33 +180,35 @@ export default function MovementsPage() {
             </div>
 
             {/* Lines */}
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Items</label>
-              {form.lines.map((line, idx) => (
-                <div key={idx} className="flex gap-2 mb-2">
-                  <select className="input-field flex-1" value={line.productId} onChange={(e) => updateLine(idx, 'productId', e.target.value)}>
-                    <option value="">Select Product...</option>
-                    {products.map((p: any) => <option key={p.id} value={p.id}>{p.sku} — {p.name}</option>)}
-                  </select>
-                  <input type="number" placeholder="Qty" className="input-field w-24" value={line.quantity} onChange={(e) => updateLine(idx, 'quantity', e.target.value)} />
-                  {form.lines.length > 1 && (
-                    <button onClick={() => removeLine(idx)} className="text-red-500 hover:text-red-700 px-2">
-                      <XCircle size={18} />
-                    </button>
-                  )}
-                </div>
-              ))}
-              <button onClick={addLine} className="text-sm text-primary-600 hover:text-primary-700 font-medium">
+            <div className="mb-5">
+              <label className="input-label mb-2">Items</label>
+              <div className="space-y-2">
+                {form.lines.map((line, idx) => (
+                  <div key={idx} className="flex gap-2 items-center">
+                    <select className="input-field flex-1" value={line.productId} onChange={(e) => updateLine(idx, 'productId', e.target.value)}>
+                      <option value="">Select Product...</option>
+                      {products.map((p: any) => <option key={p.id} value={p.id}>{p.sku} — {p.name}</option>)}
+                    </select>
+                    <input type="number" placeholder="Qty" className="input-field w-28" value={line.quantity} onChange={(e) => updateLine(idx, 'quantity', e.target.value)} />
+                    {form.lines.length > 1 && (
+                      <button onClick={() => removeLine(idx)} className="p-2 rounded-xl text-gray-400 hover:text-red-600 hover:bg-red-50 transition-all">
+                        <XCircle size={18} />
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+              <button onClick={addLine} className="text-sm text-primary-600 hover:text-primary-700 font-semibold mt-2">
                 + Add Item
               </button>
             </div>
 
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+            <div className="mb-5">
+              <label className="input-label">Notes</label>
               <textarea className="input-field" rows={2} value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} />
             </div>
 
-            <div className="flex gap-2">
+            <div className="flex gap-3 pt-4 border-t border-primary-100">
               <button onClick={handleCreate} className="btn-primary">Submit</button>
               <button onClick={() => setShowForm(false)} className="btn-secondary">Cancel</button>
             </div>
@@ -214,42 +216,47 @@ export default function MovementsPage() {
         )}
 
         {/* Movements Table */}
-        <div className="card overflow-hidden">
+        <div className="card !p-0 overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
+            <table className="min-w-full divide-y divide-gray-100">
+              <thead>
+                <tr className="bg-gray-50/80">
                   <th className="table-header">Reference</th>
                   <th className="table-header">Type</th>
                   <th className="table-header">From</th>
                   <th className="table-header">To</th>
-                  <th className="table-header">Items</th>
+                  <th className="table-header text-center">Items</th>
                   <th className="table-header">Status</th>
                   <th className="table-header">Date</th>
-                  <th className="table-header">Actions</th>
+                  <th className="table-header text-center">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200">
+              <tbody className="divide-y divide-gray-50">
                 {loading
                   ? Array.from({ length: 5 }).map((_, i) => (
                       <tr key={i}>{Array.from({ length: 8 }).map((_, j) => (
-                        <td key={j} className="table-cell"><div className="h-4 bg-gray-200 rounded animate-pulse w-3/4" /></td>
+                        <td key={j} className="table-cell"><div className="skeleton h-4 w-3/4" /></td>
                       ))}</tr>
                     ))
                   : movements.length === 0
-                  ? <tr><td colSpan={8} className="text-center py-10 text-gray-400">No movements found</td></tr>
+                  ? <tr><td colSpan={8} className="text-center py-16 text-gray-400">
+                      <ArrowLeftRight size={40} className="mx-auto mb-3 opacity-40" />
+                      <p className="font-medium">No movements found</p>
+                    </td></tr>
                   : movements.map((mov: any) => (
-                      <tr key={mov.id} className="hover:bg-gray-50">
-                        <td className="table-cell font-mono text-sm">{mov.referenceNumber}</td>
+                      <tr key={mov.id} className="hover:bg-gray-50/60 transition-colors">
+                        <td className="table-cell font-mono text-xs font-semibold text-gray-800">{mov.referenceNumber}</td>
                         <td className="table-cell">
-                          <span className="flex items-center gap-1">
+                          <span className="flex items-center gap-1.5">
                             {typeIcon(mov.type)}
-                            <span className="text-sm">{mov.type?.replace('_', ' ')}</span>
+                            <span className="text-sm font-medium">{mov.type?.replace('_', ' ')}</span>
                           </span>
                         </td>
-                        <td className="table-cell text-sm">{mov.sourceWarehouse?.name || '-'}</td>
-                        <td className="table-cell text-sm">{mov.destinationWarehouse?.name || '-'}</td>
-                        <td className="table-cell text-sm">{mov.lines?.length || 0} item(s)</td>
+                        <td className="table-cell text-sm text-gray-600">{mov.sourceWarehouse?.name || '-'}</td>
+                        <td className="table-cell text-sm text-gray-600">{mov.destinationWarehouse?.name || '-'}</td>
+                        <td className="table-cell text-center">
+                          <span className="badge badge-neutral">{mov.lines?.length || 0}</span>
+                        </td>
                         <td className="table-cell">
                           <span className={`badge ${
                             mov.status === 'COMPLETED' ? 'badge-success' :
@@ -258,16 +265,16 @@ export default function MovementsPage() {
                             {mov.status}
                           </span>
                         </td>
-                        <td className="table-cell text-sm text-gray-500">
+                        <td className="table-cell text-sm text-gray-400">
                           {new Date(mov.createdAt).toLocaleDateString('id-ID')}
                         </td>
                         <td className="table-cell">
                           {mov.status === 'PENDING' && (
-                            <div className="flex gap-1">
-                              <button onClick={() => handleApprove(mov.id)} className="p-1.5 text-green-600 hover:bg-green-50 rounded" title="Approve">
+                            <div className="flex gap-1 justify-center">
+                              <button onClick={() => handleApprove(mov.id)} className="p-2 rounded-xl text-emerald-600 hover:bg-emerald-50 transition-all" title="Approve">
                                 <CheckCircle size={16} />
                               </button>
-                              <button onClick={() => handleReject(mov.id)} className="p-1.5 text-red-600 hover:bg-red-50 rounded" title="Reject">
+                              <button onClick={() => handleReject(mov.id)} className="p-2 rounded-xl text-red-500 hover:bg-red-50 transition-all" title="Reject">
                                 <XCircle size={16} />
                               </button>
                             </div>
@@ -280,11 +287,13 @@ export default function MovementsPage() {
           </div>
 
           {meta.totalPages > 1 && (
-            <div className="flex items-center justify-between p-4 border-t border-gray-200">
-              <span className="text-sm text-gray-500">Page {meta.page} of {meta.totalPages}</span>
+            <div className="flex items-center justify-between px-5 py-4 border-t border-gray-100 bg-gray-50/40">
+              <span className="text-sm text-gray-500">
+                Page <span className="font-semibold text-gray-700">{meta.page}</span> of {meta.totalPages}
+              </span>
               <div className="flex gap-2">
-                <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1} className="btn-secondary text-sm px-3 py-1.5">Previous</button>
-                <button onClick={() => setPage((p) => Math.min(meta.totalPages, p + 1))} disabled={page === meta.totalPages} className="btn-secondary text-sm px-3 py-1.5">Next</button>
+                <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1} className="btn-secondary text-sm px-3 py-1.5 disabled:opacity-40">Previous</button>
+                <button onClick={() => setPage((p) => Math.min(meta.totalPages, p + 1))} disabled={page === meta.totalPages} className="btn-secondary text-sm px-3 py-1.5 disabled:opacity-40">Next</button>
               </div>
             </div>
           )}

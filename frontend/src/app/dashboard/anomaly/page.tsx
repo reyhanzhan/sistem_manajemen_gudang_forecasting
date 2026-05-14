@@ -69,15 +69,15 @@ export default function AnomalyPage() {
     <div>
       <Header title="Anomaly Detection" subtitle="AI-powered fraud & error detection using Isolation Forest" />
 
-      <div className="p-6 space-y-6">
+      <div className="page-container">
         {/* Controls */}
         <div className="card flex items-center gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Analysis Period</label>
+            <label className="input-label">Analysis Period</label>
             <select
               value={daysBack}
               onChange={(e) => setDaysBack(Number(e.target.value))}
-              className="input w-40"
+              className="input-field w-40"
             >
               <option value={30}>30 days</option>
               <option value={60}>60 days</option>
@@ -132,7 +132,10 @@ export default function AnomalyPage() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Anomaly Scatter Plot */}
               <div className="card">
-                <h3 className="text-lg font-semibold mb-4">Anomaly Distribution (Hour vs Quantity)</h3>
+                <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                  <div className="p-1.5 rounded-lg bg-gradient-to-br from-red-50 to-red-100"><ShieldAlert size={14} className="text-red-600" /></div>
+                  Anomaly Distribution (Hour vs Quantity)
+                </h3>
                 <ResponsiveContainer width="100%" height={300}>
                   <ScatterChart>
                     <CartesianGrid strokeDasharray="3 3" />
@@ -156,26 +159,34 @@ export default function AnomalyPage() {
 
               {/* Reason Distribution */}
               <div className="card">
-                <h3 className="text-lg font-semibold mb-4">Anomaly Reasons</h3>
+                <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                  <div className="p-1.5 rounded-lg bg-gradient-to-br from-amber-50 to-amber-100"><AlertTriangle size={14} className="text-amber-600" /></div>
+                  Anomaly Reasons
+                </h3>
                 <ResponsiveContainer width="100%" height={300}>
                   <BarChart data={reasonData} layout="vertical">
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis type="number" />
-                    <YAxis type="category" dataKey="reason" width={150} tick={{ fontSize: 11 }} />
-                    <Tooltip />
-                    <Bar dataKey="count" fill="#ef4444" radius={[0, 4, 4, 0]} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                    <XAxis type="number" stroke="#94a3b8" />
+                    <YAxis type="category" dataKey="reason" width={150} tick={{ fontSize: 11 }} stroke="#94a3b8" />
+                    <Tooltip contentStyle={{ borderRadius: 12, border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.08)' }} />
+                    <Bar dataKey="count" fill="#ef4444" radius={[0, 6, 6, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
             </div>
 
             {/* Anomaly Table */}
-            <div className="card">
-              <h3 className="text-lg font-semibold mb-4">Detected Anomalies</h3>
+            <div className="card !p-0 overflow-hidden">
+              <div className="px-6 py-4 border-b border-gray-100">
+                <h3 className="text-lg font-semibold flex items-center gap-2">
+                  <div className="p-1.5 rounded-lg bg-gradient-to-br from-red-50 to-red-100"><ShieldAlert size={14} className="text-red-600" /></div>
+                  Detected Anomalies
+                </h3>
+              </div>
               <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
+                <table className="min-w-full divide-y divide-gray-100">
                   <thead>
-                    <tr>
+                    <tr className="bg-gray-50/80">
                       <th className="table-header">Reference</th>
                       <th className="table-header">Type</th>
                       <th className="table-header">Product</th>
@@ -186,33 +197,33 @@ export default function AnomalyPage() {
                       <th className="table-header">Reasons</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-200">
+                  <tbody className="divide-y divide-gray-50">
                     {anomalies.map((anomaly: any, i: number) => (
-                      <tr key={i} className="hover:bg-gray-50">
+                      <tr key={i} className="hover:bg-gray-50/60 transition-colors">
                         <td className="table-cell font-mono text-xs">{anomaly.reference_number}</td>
                         <td className="table-cell">
                           <span className={`badge ${anomaly.movement_type === 'STOCK_OUT' ? 'badge-danger' : 'badge-info'}`}>
                             {anomaly.movement_type}
                           </span>
                         </td>
-                        <td className="table-cell text-sm">{anomaly.product_name}</td>
-                        <td className="table-cell text-sm">{anomaly.user_name}</td>
-                        <td className="table-cell font-semibold">{anomaly.quantity}</td>
-                        <td className="table-cell text-sm">
+                        <td className="table-cell text-sm font-medium text-gray-900">{anomaly.product_name}</td>
+                        <td className="table-cell text-sm text-gray-600">{anomaly.user_name}</td>
+                        <td className="table-cell font-bold">{anomaly.quantity}</td>
+                        <td className="table-cell text-sm text-gray-500">
                           {new Date(anomaly.created_at).toLocaleString('id-ID')}
                         </td>
                         <td className="table-cell">
                           <span
-                            className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                              anomaly.risk_level === 'HIGH' ? 'bg-red-100 text-red-700' :
-                              anomaly.risk_level === 'MEDIUM' ? 'bg-yellow-100 text-yellow-700' :
-                              'bg-green-100 text-green-700'
+                            className={`badge ${
+                              anomaly.risk_level === 'HIGH' ? 'badge-danger' :
+                              anomaly.risk_level === 'MEDIUM' ? 'badge-warning' :
+                              'badge-success'
                             }`}
                           >
                             {anomaly.risk_level}
                           </span>
                         </td>
-                        <td className="table-cell text-xs text-gray-600">{anomaly.reasons.join('; ')}</td>
+                        <td className="table-cell text-xs text-gray-500">{anomaly.reasons.join('; ')}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -223,10 +234,10 @@ export default function AnomalyPage() {
         )}
 
         {!result && !loading && (
-          <div className="card text-center py-12">
-            <ShieldAlert size={48} className="mx-auto text-gray-400 mb-4" />
+          <div className="card text-center py-20">
+            <ShieldAlert size={48} className="mx-auto text-gray-300 mb-4" />
             <h3 className="text-lg font-semibold text-gray-600">Anomaly Detection</h3>
-            <p className="text-sm text-gray-500 mt-1">
+            <p className="text-sm text-gray-400 mt-1 max-w-md mx-auto">
               Klik &quot;Run Detection&quot; untuk menganalisis transaksi mencurigakan menggunakan Isolation Forest AI
             </p>
           </div>
