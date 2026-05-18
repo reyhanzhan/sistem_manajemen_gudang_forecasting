@@ -1,11 +1,12 @@
 # ─── Backend Dockerfile ───────────────────────────────
 FROM node:20-alpine AS base
+RUN apk add --no-cache openssl
 
 # ─── Dependencies ─────────────────────────────────────
 FROM base AS deps
 WORKDIR /app
 COPY package.json package-lock.json* ./
-RUN npm ci --only=production && cp -R node_modules /prod_modules
+RUN npm ci --omit=dev && cp -R node_modules /prod_modules
 RUN npm ci
 
 # ─── Build ────────────────────────────────────────────
@@ -36,4 +37,4 @@ USER nestjs
 
 EXPOSE 3001
 
-CMD ["sh", "-c", "npx prisma migrate deploy && node dist/main"]
+CMD ["sh", "-c", "./node_modules/.bin/prisma migrate deploy && node dist/main"]
