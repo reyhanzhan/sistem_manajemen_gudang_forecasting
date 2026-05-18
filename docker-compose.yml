@@ -49,6 +49,7 @@ services:
       DATABASE_URL: postgresql://wms_admin:${POSTGRES_PASSWORD:-wms_secure_2024}@postgres:5432/warehouse_management
       JWT_SECRET: ${JWT_SECRET:-super_secret_jwt_key_change_in_production}
       JWT_EXPIRATION: 24h
+      CORS_ORIGIN: http://43.128.67.165:3000
       AI_SERVICE_URL: http://ai-service:8000
       REDIS_URL: redis://redis:6379
       PORT: 3001
@@ -73,7 +74,7 @@ services:
     container_name: wms_frontend
     restart: unless-stopped
     environment:
-      NEXT_PUBLIC_API_URL: http://localhost:3001/api/v1
+      NEXT_PUBLIC_API_URL: http://43.128.67.165:3001/api/v1
       NEXT_PUBLIC_WS_URL: http://localhost:3001
     ports:
       - '3000:3000'
