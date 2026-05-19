@@ -36,6 +36,11 @@ ai-service/models/*.joblib
 
 # Database
 postgres_data/
+*.db
+*.sqlite
+*.sqlite3
+prisma/dev.db
+backend/prisma/dev.db
 
 # Docker
 docker/volumes/
