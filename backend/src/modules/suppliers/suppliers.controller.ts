@@ -1,7 +1,6 @@
 import { Controller, Get, Post, Patch, Param, Body, Query, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiBearerAuth, ApiTags, ApiOperation } from '@nestjs/swagger';
-import { Role } from '@prisma/client';
 import { SuppliersService } from './suppliers.service';
 import { CreateSupplierDto, UpdateSupplierDto } from './dto/supplier.dto';
 import { Roles } from '../../common/decorators';
@@ -15,7 +14,7 @@ export class SuppliersController {
   constructor(private readonly suppliersService: SuppliersService) {}
 
   @Post()
-  @Roles(Role.ADMIN, Role.MANAGER)
+  @Roles('ADMIN', 'MANAGER')
   @ApiOperation({ summary: 'Create supplier' })
   create(@Body() dto: CreateSupplierDto) { return this.suppliersService.create(dto); }
 
@@ -28,7 +27,7 @@ export class SuppliersController {
   findOne(@Param('id') id: string) { return this.suppliersService.findOne(id); }
 
   @Patch(':id')
-  @Roles(Role.ADMIN, Role.MANAGER)
+  @Roles('ADMIN', 'MANAGER')
   @ApiOperation({ summary: 'Update supplier' })
   update(@Param('id') id: string, @Body() dto: UpdateSupplierDto) {
     return this.suppliersService.update(id, dto);

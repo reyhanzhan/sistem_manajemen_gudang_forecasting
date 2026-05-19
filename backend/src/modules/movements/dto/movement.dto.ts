@@ -1,7 +1,6 @@
 import { IsString, IsOptional, IsEnum, IsArray, ValidateNested, IsInt, Min, IsNumber, IsDateString } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { MovementType } from '@prisma/client';
 
 export class MovementLineDto {
   @ApiProperty() @IsString() productId: string;
@@ -13,9 +12,9 @@ export class MovementLineDto {
 }
 
 export class CreateMovementDto {
-  @ApiProperty({ enum: MovementType })
-  @IsEnum(MovementType)
-  type: MovementType;
+  @ApiProperty({ enum: ['STOCK_IN', 'STOCK_OUT', 'TRANSFER', 'ADJUSTMENT'] as const })
+  @IsString()
+  type: string;
 
   @ApiPropertyOptional({ description: 'Source warehouse (required for STOCK_OUT, TRANSFER)' })
   @IsOptional() @IsString() sourceWarehouseId?: string;
@@ -37,7 +36,7 @@ export class CreateMovementDto {
 }
 
 export class MovementQueryDto {
-  @IsOptional() @IsEnum(MovementType) type?: MovementType;
+  @IsOptional() @IsString() type?: string;
   @IsOptional() @IsString() warehouseId?: string;
   @IsOptional() @IsString() status?: string;
   @IsOptional() @IsDateString() startDate?: string;

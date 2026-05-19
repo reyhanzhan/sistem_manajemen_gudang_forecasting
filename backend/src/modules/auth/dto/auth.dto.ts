@@ -1,6 +1,8 @@
-import { IsEmail, IsString, MinLength, IsOptional, IsEnum } from 'class-validator';
+import { IsEmail, IsString, MinLength, IsOptional } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Role } from '@prisma/client';
+
+export const ROLE_OPTIONS = ['ADMIN', 'MANAGER', 'STAFF'] as const;
+export type Role = (typeof ROLE_OPTIONS)[number];
 
 export class LoginDto {
   @ApiProperty({ example: 'admin@wms.com' })
@@ -31,9 +33,9 @@ export class RegisterDto {
   @IsString()
   lastName: string;
 
-  @ApiPropertyOptional({ enum: Role, default: Role.STAFF })
+  @ApiPropertyOptional({ enum: ROLE_OPTIONS, default: 'STAFF' })
   @IsOptional()
-  @IsEnum(Role)
+  @IsString()
   role?: Role;
 }
 

@@ -1,7 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { PrismaService } from '../../common/prisma/prisma.service';
-import { NotificationType, NotificationPriority } from '@prisma/client';
 
 @Injectable()
 export class NotificationsService {
@@ -9,7 +8,7 @@ export class NotificationsService {
 
   constructor(private readonly prisma: PrismaService) {}
 
-  async findAll(userId: string, query: { isRead?: boolean; type?: NotificationType; page?: number; limit?: number }) {
+  async findAll(userId: string, query: { isRead?: boolean; type?: string; page?: number; limit?: number }) {
     const { isRead, type, page = 1, limit = 20 } = query;
     const skip = (page - 1) * limit;
 
@@ -48,11 +47,11 @@ export class NotificationsService {
    */
   async createAlert(params: {
     userIds?: string[];
-    type: NotificationType;
-    priority: NotificationPriority;
+    type: string;
+    priority: string;
     title: string;
     message: string;
-    metadata?: any;
+    metadata?: string;
   }) {
     let targetUserIds = params.userIds;
 
@@ -107,19 +106,19 @@ export class NotificationsService {
     );
 
     for (const item of criticalItems) {
-      const priority = item.quantity === 0 ? NotificationPriority.CRITICAL : NotificationPriority.HIGH;
+      const priority = item.quantity === 0 ? 'CRITICAL' : 'HIGH';
 
       await this.createAlert({
-        type: NotificationType.LOW_STOCK,
+        type: 'LOW_STOCK',
         priority,
         title: `Low Stock: ${item.product.name}`,
         message: `${item.product.sku} at ${item.warehouse.name} has ${item.quantity} units (min: ${item.product.minStockLevel}). Suggested reorder: ${item.product.reorderQuantity} units.`,
-        metadata: {
+        metadata: JSON.stringify({
           productId: item.product.id,
           warehouseId: item.warehouse.id,
           currentStock: item.quantity,
           minStockLevel: item.product.minStockLevel,
-        },
+        }),
       });
     }
 

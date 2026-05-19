@@ -1,7 +1,6 @@
 import { Controller, Get, Post, Patch, Param, Body, Query, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiBearerAuth, ApiTags, ApiOperation } from '@nestjs/swagger';
-import { Role } from '@prisma/client';
 import { MovementsService } from './movements.service';
 import { CreateMovementDto, MovementQueryDto } from './dto/movement.dto';
 import { Roles, CurrentUser } from '../../common/decorators';
@@ -33,14 +32,14 @@ export class MovementsController {
   }
 
   @Patch(':id/approve')
-  @Roles(Role.ADMIN, Role.MANAGER)
+  @Roles('ADMIN', 'MANAGER')
   @ApiOperation({ summary: 'Approve and execute movement' })
   approve(@Param('id') id: string, @CurrentUser('id') userId: string) {
     return this.movementsService.approve(id, userId);
   }
 
   @Patch(':id/reject')
-  @Roles(Role.ADMIN, Role.MANAGER)
+  @Roles('ADMIN', 'MANAGER')
   @ApiOperation({ summary: 'Reject movement' })
   reject(
     @Param('id') id: string,

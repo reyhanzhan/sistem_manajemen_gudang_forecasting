@@ -1,7 +1,6 @@
 import { Controller, Get, Post, Patch, Param, Body, Query, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiBearerAuth, ApiTags, ApiOperation } from '@nestjs/swagger';
-import { Role } from '@prisma/client';
 import { WarehousesService } from './warehouses.service';
 import { CreateWarehouseDto, UpdateWarehouseDto, WarehouseQueryDto } from './dto/warehouse.dto';
 import { Roles } from '../../common/decorators';
@@ -15,7 +14,7 @@ export class WarehousesController {
   constructor(private readonly warehousesService: WarehousesService) {}
 
   @Post()
-  @Roles(Role.ADMIN)
+  @Roles('ADMIN')
   @ApiOperation({ summary: 'Create warehouse' })
   create(@Body() dto: CreateWarehouseDto) {
     return this.warehousesService.create(dto);
@@ -34,7 +33,7 @@ export class WarehousesController {
   }
 
   @Patch(':id')
-  @Roles(Role.ADMIN, Role.MANAGER)
+  @Roles('ADMIN', 'MANAGER')
   @ApiOperation({ summary: 'Update warehouse' })
   update(@Param('id') id: string, @Body() dto: UpdateWarehouseDto) {
     return this.warehousesService.update(id, dto);

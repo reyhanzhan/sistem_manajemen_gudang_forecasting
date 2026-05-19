@@ -1,6 +1,7 @@
-import { IsString, IsOptional, IsEnum, IsInt, IsNumber } from 'class-validator';
+import { IsString, IsOptional, IsInt, IsNumber } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { WarehouseStatus } from '@prisma/client';
+
+export type WarehouseStatus = 'ACTIVE' | 'INACTIVE' | 'MAINTENANCE';
 
 export class CreateWarehouseDto {
   @ApiProperty({ example: 'WH-JKT-01' }) @IsString() code: string;
@@ -23,12 +24,12 @@ export class UpdateWarehouseDto {
   @IsOptional() @IsString() postalCode?: string;
   @IsOptional() @IsString() phone?: string;
   @IsOptional() @IsInt() capacity?: number;
-  @IsOptional() @IsEnum(WarehouseStatus) status?: WarehouseStatus;
+  @IsOptional() @IsString() status?: WarehouseStatus;
 }
 
 export class WarehouseQueryDto {
   @IsOptional() @IsString() search?: string;
-  @IsOptional() @IsEnum(WarehouseStatus) status?: WarehouseStatus;
+  @IsOptional() @IsString() status?: WarehouseStatus;
   @IsOptional() @IsString() city?: string;
   @IsOptional() page?: number;
   @IsOptional() limit?: number;

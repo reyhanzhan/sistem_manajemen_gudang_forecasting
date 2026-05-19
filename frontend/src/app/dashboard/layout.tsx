@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Sidebar from '@/components/layout/Sidebar';
 import { useAuthStore } from '@/store/auth.store';
@@ -12,6 +12,7 @@ export default function DashboardLayout({
 }) {
   const router = useRouter();
   const { isAuthenticated, loadFromStorage } = useAuthStore();
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   useEffect(() => {
     loadFromStorage();
@@ -28,8 +29,8 @@ export default function DashboardLayout({
 
   return (
     <div className="flex min-h-screen bg-gray-50/80">
-      <Sidebar />
-      <main className="flex-1 ml-[260px] min-h-screen">
+      <Sidebar collapsed={sidebarCollapsed} onCollapsedChange={setSidebarCollapsed} />
+      <main className={`flex-1 min-h-screen transition-all duration-300 ${sidebarCollapsed ? 'ml-[72px]' : 'ml-[260px]'}`}>
         {children}
       </main>
     </div>

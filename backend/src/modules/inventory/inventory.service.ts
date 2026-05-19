@@ -120,8 +120,8 @@ export class InventoryService {
         action: 'STOCK_ADJUSTMENT',
         entity: 'inventory',
         entityId: inventory.id,
-        oldValues: { quantity: oldQuantity },
-        newValues: { quantity: newQuantity, reason },
+        oldValues: JSON.stringify({ quantity: oldQuantity }),
+        newValues: JSON.stringify({ quantity: newQuantity, reason }),
       },
     });
 

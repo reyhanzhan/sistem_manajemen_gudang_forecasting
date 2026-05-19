@@ -1,4 +1,4 @@
-import { PrismaClient, Role, WarehouseStatus, ProductStatus } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
@@ -17,7 +17,7 @@ async function main() {
       passwordHash,
       firstName: 'System',
       lastName: 'Administrator',
-      role: Role.ADMIN,
+      role: 'ADMIN',
     },
   });
 
@@ -29,7 +29,7 @@ async function main() {
       passwordHash,
       firstName: 'Budi',
       lastName: 'Santoso',
-      role: Role.MANAGER,
+      role: 'MANAGER',
     },
   });
 
@@ -41,7 +41,7 @@ async function main() {
       passwordHash,
       firstName: 'Siti',
       lastName: 'Rahayu',
-      role: Role.STAFF,
+      role: 'STAFF',
     },
   });
 
@@ -61,7 +61,7 @@ async function main() {
         postalCode: '13920',
         phone: '021-4603000',
         capacity: 50000,
-        status: WarehouseStatus.ACTIVE,
+        status: 'ACTIVE',
       },
     }),
     prisma.warehouse.upsert({
@@ -76,7 +76,7 @@ async function main() {
         postalCode: '60293',
         phone: '031-8431000',
         capacity: 35000,
-        status: WarehouseStatus.ACTIVE,
+        status: 'ACTIVE',
       },
     }),
     prisma.warehouse.upsert({
@@ -91,7 +91,7 @@ async function main() {
         postalCode: '40286',
         phone: '022-7831000',
         capacity: 20000,
-        status: WarehouseStatus.ACTIVE,
+        status: 'ACTIVE',
       },
     }),
   ]);
@@ -106,7 +106,6 @@ async function main() {
       { userId: manager.id, warehouseId: warehouses[1].id, isPrimary: false },
       { userId: staff.id, warehouseId: warehouses[0].id, isPrimary: true },
     ],
-    skipDuplicates: true,
   });
 
   // ─── Categories ─────────────────────────────────────────
@@ -186,7 +185,6 @@ async function main() {
       { productId: products[4].id, supplierId: suppliers[1].id, unitCost: 6500, isPrimary: true, minOrderQty: 500 },
       { productId: products[6].id, supplierId: suppliers[0].id, unitCost: 1900000, isPrimary: true, minOrderQty: 5 },
     ],
-    skipDuplicates: true,
   });
 
   // ─── Inventory (Initial stock) ──────────────────────────

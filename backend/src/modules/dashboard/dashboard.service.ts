@@ -94,15 +94,21 @@ export class DashboardService {
     });
 
     // Group by date and type
-    const trends: Record<string, { STOCK_IN: number; STOCK_OUT: number; TRANSFER: number; ADJUSTMENT: number }> = {};
+    const trends: Record<string, Record<string, number>> = {};
+
+    const typeKeys = ['STOCK_IN', 'STOCK_OUT', 'TRANSFER', 'ADJUSTMENT'] as const;
 
     movements.forEach((m) => {
       const dateKey = m.createdAt.toISOString().slice(0, 10);
       if (!trends[dateKey]) {
-        trends[dateKey] = { STOCK_IN: 0, STOCK_OUT: 0, TRANSFER: 0, ADJUSTMENT: 0 };
+        const initial: Record<string, number> = {};
+        for (const key of typeKeys) initial[key] = 0;
+        trends[dateKey] = initial;
       }
       const totalQty = m.lines.reduce((sum, l) => sum + l.quantity, 0);
-      trends[dateKey][m.type] += totalQty;
+      if (trends[dateKey][m.type] !== undefined) {
+        trends[dateKey][m.type] += totalQty;
+      }
     });
 
     return Object.entries(trends)
@@ -126,7 +132,7 @@ export class DashboardService {
       },
     });
 
-    const productVolumes: Record<string, { product: any; totalQuantity: number; movementCount: number }> = {};
+    const productVolumes: Record<string, { product: unknown; totalQuantity: number; movementCount: number }> = {};
 
     movements.forEach((line) => {
       const key = line.productId;

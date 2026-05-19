@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
+import { HealthController } from './health.controller';
 
 // Core modules
 import { PrismaModule } from './common/prisma/prisma.module';
@@ -51,5 +52,6 @@ import { OptimizationModule } from './modules/optimization/optimization.module';
     AnomalyModule,
     OptimizationModule,
   ],
+  controllers: [HealthController],
 })
 export class AppModule {}

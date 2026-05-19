@@ -7,7 +7,7 @@ import {
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { EventsGateway } from '../../common/events/events.gateway';
 import { CreateMovementDto, MovementQueryDto } from './dto/movement.dto';
-import { MovementType, MovementStatus, Prisma } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class MovementsService {
@@ -48,17 +48,17 @@ export class MovementsService {
     }
 
     switch (dto.type) {
-      case MovementType.STOCK_IN:
+      case 'STOCK_IN':
         if (!dto.destinationWarehouseId) {
           throw new BadRequestException('Destination warehouse required for Stock In');
         }
         break;
-      case MovementType.STOCK_OUT:
+      case 'STOCK_OUT':
         if (!dto.sourceWarehouseId) {
           throw new BadRequestException('Source warehouse required for Stock Out');
         }
         break;
-      case MovementType.TRANSFER:
+      case 'TRANSFER':
         if (!dto.sourceWarehouseId || !dto.destinationWarehouseId) {
           throw new BadRequestException('Both source and destination warehouses required for Transfer');
         }
@@ -84,7 +84,7 @@ export class MovementsService {
         data: {
           referenceNumber,
           type: dto.type,
-          status: MovementStatus.PENDING,
+          status: 'PENDING',
           sourceWarehouseId: dto.sourceWarehouseId,
           destinationWarehouseId: dto.destinationWarehouseId,
           supplierId: dto.supplierId,
@@ -128,7 +128,7 @@ export class MovementsService {
     });
 
     if (!movement) throw new NotFoundException('Movement not found');
-    if (movement.status !== MovementStatus.PENDING) {
+    if (movement.status !== 'PENDING') {
       throw new BadRequestException(`Cannot approve movement with status: ${movement.status}`);
     }
 
@@ -137,7 +137,7 @@ export class MovementsService {
       for (const line of movement.lines) {
         // STOCK_OUT or TRANSFER — decrease source
         if (
-          (movement.type === MovementType.STOCK_OUT || movement.type === MovementType.TRANSFER) &&
+          (movement.type === 'STOCK_OUT' || movement.type === 'TRANSFER') &&
           movement.sourceWarehouseId
         ) {
           const sourceInventory = await tx.inventory.findFirst({
@@ -161,7 +161,7 @@ export class MovementsService {
 
         // STOCK_IN or TRANSFER — increase destination
         if (
-          (movement.type === MovementType.STOCK_IN || movement.type === MovementType.TRANSFER) &&
+          (movement.type === 'STOCK_IN' || movement.type === 'TRANSFER') &&
           movement.destinationWarehouseId
         ) {
           await tx.inventory.upsert({
@@ -190,7 +190,7 @@ export class MovementsService {
       const updated = await tx.inventoryMovement.update({
         where: { id: movementId },
         data: {
-          status: MovementStatus.COMPLETED,
+          status: 'COMPLETED',
           approvedById: approverId,
           approvedAt: new Date(),
           completedAt: new Date(),
@@ -240,14 +240,14 @@ export class MovementsService {
   async reject(movementId: string, approverId: string, reason?: string) {
     const movement = await this.prisma.inventoryMovement.findUnique({ where: { id: movementId } });
     if (!movement) throw new NotFoundException('Movement not found');
-    if (movement.status !== MovementStatus.PENDING) {
+    if (movement.status !== 'PENDING') {
       throw new BadRequestException(`Cannot reject movement with status: ${movement.status}`);
     }
 
     return this.prisma.inventoryMovement.update({
       where: { id: movementId },
       data: {
-        status: MovementStatus.REJECTED,
+        status: 'REJECTED',
         approvedById: approverId,
         approvedAt: new Date(),
         notes: reason ? `${movement.notes || ''}\n[REJECTED] ${reason}` : movement.notes,
@@ -264,7 +264,7 @@ export class MovementsService {
 
     const where: Prisma.InventoryMovementWhereInput = {};
     if (type) where.type = type;
-    if (status) where.status = status as MovementStatus;
+    if (status) where.status = status;
     if (warehouseId) {
       where.OR = [
         { sourceWarehouseId: warehouseId },
